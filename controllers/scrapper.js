@@ -42,12 +42,21 @@ function generateHTML(data) {
 }
 
 function saveHTML(content) {
-  fs.appendFile('views/index.html', content, (err) => {
+  fs.readFile('views/index.html', 'utf8', (err, data) => {
     if (err) {
-      console.log(`Failed to save HTML file: ${err}`);
-    } else {
-      console.log('HTML file saved successfully.');
+      console.log(`Failed to read HTML file: ${err}`);
+      return;
     }
+    
+    const combinedContent = content + data;
+    
+    fs.writeFile('views/index.html', combinedContent, (err) => {
+      if (err) {
+        console.log(`Failed to save HTML file: ${err}`);
+      } else {
+        console.log('HTML file saved successfully.');
+      }
+    });
   });
 }
 
@@ -66,7 +75,8 @@ const scrapeSite = async (req, res) => {
 
       propertyItems.each((index, element) => {
         const linkElement = $(element).find('.item_link');
-        const link = linkElement.attr('href');
+        const link = 'https://bina.az/'+linkElement.attr('href');
+        const anchorTag = linkElement.prop('outerHTML'); // Get the full anchor tag HTML
         
         const imageElement = $(element).find('.slider_image img');
         const imageURL = imageElement.attr('data-src');
