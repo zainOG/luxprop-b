@@ -21,10 +21,161 @@ function generateHTML(data) {
             text-decoration: none;
             color: black;
           }
+          body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+          }
+        
+          form {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+          }
+        
+          label {
+            display: block;
+            margin-bottom: 5px;
+          }
+        
+          .form-column {
+            flex-basis: 45%;
+            margin-bottom: 10px;
+          }
+        
+          select,
+          input[type="text"],
+          input[type="number"],
+          input[type="submit"],
+          input[type="checkbox"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+          }
+        
+          input[type="submit"] {
+            background-color: #4caf50;
+            color: #fff;
+            cursor: pointer;
+          }
+        
+          input[type="checkbox"] {
+            display: inline;
+            width: auto;
+            margin-right: 5px;
+          }
         </style>
       </head>
       <body>
-        <div class="image-container">`;
+      <form action="search_results.html" method="GET">
+      <div class="form-column">
+      <label for="object-type">Type of Object:</label>
+      <select name="object-type" id="object-type">
+        <option value="house">House</option>
+        <option value="apartment">Apartment</option>
+        <option value="office">Office</option>
+        <!-- Add more options as needed -->
+      </select>
+      <br>
+    
+      <label for="building-type">Type of Building:</label>
+      <select name="building-type" id="building-type">
+        <option value="residential">Residential</option>
+        <option value="commercial">Commercial</option>
+        <!-- Add more options as needed -->
+      </select>
+      <br>
+    
+      <label for="announcement-type">Type of Announcement:</label>
+      <select name="announcement-type" id="announcement-type">
+        <option value="sale">Sale</option>
+        <option value="rent">Rent</option>
+        <!-- Add more options as needed -->
+      </select>
+      <br>
+    
+      <label for="vendor-type">Vendor Type:</label>
+      <select name="vendor-type" id="vendor-type">
+        <option value="individual">Individual</option>
+        <option value="agency">Agency</option>
+        <!-- Add more options as needed -->
+      </select>
+      <br>
+    
+      <label for="city">City:</label>
+      <input type="text" name="city" id="city">
+      <br>
+    
+      <label for="district">District:</label>
+      <input type="text" name="district" id="district">
+      <br>
+    
+      <label for="metro">Metro:</label>
+      <input type="text" name="metro" id="metro">
+      <br>
+    
+      <label for="cave">The Cave:</label>
+      <input type="text" name="cave" id="cave">
+      <br>
+    
+      <label for="bookmark">Bookmark:</label>
+      <input type="text" name="bookmark" id="bookmark">
+      <br>
+    
+      <label for="keywords">By Words:</label>
+      <input type="text" name="keywords" id="keywords">
+      <br>
+      </div>
+      <div class="form-column">    
+      <label for="document">Document:</label>
+      <input type="text" name="document" id="document">
+      <br>
+    
+      <label for="credit-condition">Credit Condition:</label>
+      <input type="text" name="credit-condition" id="credit-condition">
+      <br>
+    
+      <label for="room-number">Room Number:</label>
+      <input type="number" name="room-number" id="room-number">
+      <br>
+    
+      <label for="editing">Editing:</label>
+      <input type="text" name="editing" id="editing">
+      <br>
+    
+      <label for="floor">Floor:</label>
+      <input type="number" name="floor" id="floor">
+      <br>
+    
+      <input type="checkbox" name="not-last-floor" id="not-last-floor">
+      <label for="not-last-floor">Not the Last Floor</label>
+      <br>
+    
+      <label for="building-floor">Building Floor Number:</label>
+      <input type="number" name="building-floor" id="building-floor">
+      <br>
+    
+      <label for="price">Price:</label>
+      <input type="number" name="price" id="price">
+      <br>
+    
+      <label for="field">Field (m2):</label>
+      <input type="number" name="field" id="field">
+      <br>
+      </div>    
+      <input type="submit" value="Search">
+    </form>
+      
+        <div class="image-container">
+        `;
 
   data.forEach(property => {
     const { link, imageURL, price, sellingRent, documents, city, regionPlace, floor, room, source } = property;
@@ -134,7 +285,7 @@ const scrapeSite = async (req, res) => {
             floor = 'Not Found'; // Not available on Bina.az
             room = 'Not Found'; // Not available on Bina.az
           } else if (website.source === 'Kub.az') {
-            console.log('Im at 2');
+            //console.log('Im at 2');
             const linkElement = $(element).find('.item-picture a');
             link ='https://kub.az/'+linkElement.attr('href');
 
@@ -154,10 +305,10 @@ const scrapeSite = async (req, res) => {
             city = locationElements.eq(0).text().trim();
             regionPlace = locationElements.eq(1).text().trim();
 
-            const sellingRent = 'Not Found'; // Not available in the provided HTML structure
-            const documents = 'Not Found'; // Not available in the provided HTML structure
-            const floor = 'Not Found'; // Not available in the provided HTML structure
-            const room = 'Not Found'; // Not available in the provided HTML structure
+            sellingRent = 'Not Found'; // Not available in the provided HTML structure
+            documents = 'Not Found'; // Not available in the provided HTML structure
+            floor = 'Not Found'; // Not available in the provided HTML structure
+            room = 'Not Found'; // Not available in the provided HTML structure
         
             //console.log(link, imageURL, price, city, regionPlace, name, created);
         } else if (website.source === 'Yeniemlak.az') {
@@ -194,7 +345,7 @@ const scrapeSite = async (req, res) => {
             const imageElement = imageBoxElement.find('img');
            
             imageURL = imageElement.attr('data-src');
-            console.log(imageURL)
+            //console.log(imageURL)
         
             const priceElement = $(element).find('.elan_price');
             price = priceElement.text().trim();
