@@ -75,7 +75,7 @@ function saveHTML(content) {
 const scrapeSite = async (req, res) => {
   const websites = [
     { url: 'https://bina.az/', source: 'Bina.az' },
-    { url: 'https://tap.az/elanlar/dasinmaz-emlak', source: 'Tap.az' },
+    { url: 'https://kub.az/', source: 'Kub.az' },
     { url: 'https://arenda.az/', source: 'Arenda.az' },
     { url: 'https://yeniemlak.az/', source: 'Yeniemlak.az' }
   ];
@@ -100,8 +100,8 @@ const scrapeSite = async (req, res) => {
           propertyItems = $('.items-i.vipped');
         }  else if (website.source === 'Yeniemlak.az') {
           propertyItems = $('.ads');
-        }else if (website.source === 'Tap.az') {
-          propertyItems = $('.products-i');
+        }else if (website.source === 'Kub.az') {
+          propertyItems = $('.item');
         } else if (website.source === 'Arenda.az') {
           propertyItems = $('.new_elan_box');
         }
@@ -133,32 +133,31 @@ const scrapeSite = async (req, res) => {
             documents = 'Not Found'; // Not available on Bina.az
             floor = 'Not Found'; // Not available on Bina.az
             room = 'Not Found'; // Not available on Bina.az
-          } else if (website.source === 'Tap.az') {
+          } else if (website.source === 'Kub.az') {
             console.log('Im at 2');
-            const linkElement = $(element).find('.products-link');
-            link = 'https://tap.az' + linkElement.attr('href');
-        
-            const imageElement = $(element).find('.products-top img');
-            imageURL = imageElement.attr('src');
-        
-            const priceElement = $(element).find('.products-price .price-val');
+            const linkElement = $(element).find('.item-picture a');
+            link ='https://kub.az/'+linkElement.attr('href');
+
+            const imageElement = $(element).find('.item-picture img');
+            imageURL = 'https://kub.az/'+imageElement.attr('src');
+
+            const priceElement = $(element).find('.item-price .price-amount');
             price = priceElement.text().trim();
-        
-            const nameElement = $(element).find('.products-name');
+
+            const nameElement = $(element).find('.item-category b:first-child');
             const name = nameElement.text().trim();
-        
-            const createdElement = $(element).find('.products-created');
+
+            const createdElement = $(element).find('.item-date');
             const created = createdElement.text().trim();
-        
-            locationParts = name.split(',').map(part => part.trim());
-        
-            const city = locationParts[0] || '';
-            const regionPlace = locationParts[1] || '';
-        
-            sellingRent = 'Not Found'; // Not available on Tap.az
-            documents = 'Not Found'; // Not available on Tap.az
-            floor = 'Not Found'; // Not available on Tap.az
-            room = 'Not Found'; // Not available on Tap.az
+
+            const locationElements = $(element).find('.details .text-nowrap b');
+            city = locationElements.eq(0).text().trim();
+            regionPlace = locationElements.eq(1).text().trim();
+
+            const sellingRent = 'Not Found'; // Not available in the provided HTML structure
+            const documents = 'Not Found'; // Not available in the provided HTML structure
+            const floor = 'Not Found'; // Not available in the provided HTML structure
+            const room = 'Not Found'; // Not available in the provided HTML structure
         
             //console.log(link, imageURL, price, city, regionPlace, name, created);
         } else if (website.source === 'Yeniemlak.az') {
