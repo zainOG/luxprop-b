@@ -27,7 +27,8 @@ function generateHTML(data) {
           }
         
           form {
-            max-width: 800px;
+            max-width: 1000px;
+            min-width: 600px;
             margin: 0 auto;
             padding: 20px;
             border: 1px solid #ccc;
@@ -178,18 +179,19 @@ function generateHTML(data) {
         `;
 
   data.forEach(property => {
-    const { link, imageURL, price, sellingRent, documents, city, regionPlace, floor, room, source } = property;
+    const { link, imageURL, price, sellingRent, city, regionPlace, floor, room, source, description } = property;
     html += `
       <div>
         <a href="${link}" target="_blank"><img src="${imageURL}" data-src="${imageURL}"/><br>
         <span>Price: ${price}</span><br>
         <span>Selling/Rent: ${sellingRent}</span><br>
-        <span>Documents: ${documents}</span><br>
         <span>City: ${city}</span><br>
         <span>Region/Place: ${regionPlace}</span><br>
         <span>Floor: ${floor}</span><br>
         <span>Room: ${room}</span><br>
+        <span>Description: ${description}</span><br>
         <span>Source: ${source}</span></a>
+        
       </div>
     `;
   });
@@ -228,7 +230,8 @@ const scrapeSite = async (req, res) => {
     { url: 'https://bina.az/', source: 'Bina.az' },
     { url: 'https://kub.az/', source: 'Kub.az' },
     { url: 'https://arenda.az/', source: 'Arenda.az' },
-    { url: 'https://yeniemlak.az/', source: 'Yeniemlak.az' }
+    { url: 'https://yeniemlak.az/', source: 'Yeniemlak.az' },
+    { url: 'https://lalafo.az/azerbaijan/nedvizhimost', source: 'Lalafo.az'}
   ];
 
   const headers = {
@@ -237,6 +240,10 @@ const scrapeSite = async (req, res) => {
 
   try {
     const results = [];
+    const scrapePromises = [];
+    const maxItemsPerWebsite = 10;
+    let scrapedItemsCount = 0; // Count of scraped items per website
+
 
     for (const website of websites) {
       console.log(website.url)
@@ -255,40 +262,129 @@ const scrapeSite = async (req, res) => {
           propertyItems = $('.item');
         } else if (website.source === 'Arenda.az') {
           propertyItems = $('.new_elan_box');
+        }  else if (website.source === 'Lalafo.az') {
+          propertyItems = $('.AdTileHorizontal');
         }
 
         propertyItems.each((index, element) => {
-          let link, imageURL, price, sellingRent, documents, city, regionPlace, floor, room;
+          let link, imageURL, price, sellingRent, city, regionPlace, floor, room, description;
+
+          if (scrapedItemsCount >= maxItemsPerWebsite) {
+            return; // Stop further scraping for this website
+          }
 
           if (website.source === 'Bina.az') {
             
             const linkElement = $(element).find('.item_link');
-            link = 'https://bina.az/' + linkElement.attr('href');
+            link = 'https://bina.az' + linkElement.attr('href');
             const anchorTag = linkElement.prop('outerHTML'); // Get the full anchor tag HTML
 
             const imageElement = $(element).find('.slider_image img');
             imageURL = imageElement.attr('data-src');
 
-            const priceElement = $(element).find('.price-val');
-            price = priceElement.text().trim();
-
             const locationElement = $(element).find('.location');
             regionPlace = locationElement.text().trim();
             city = locationElement.text().trim();
             //const locationParts = locationText.split(',');
-
+            console.log('Region', regionPlace)
+            console.log('Image URL', imageURL)
+            //console.log('Price', price)
             //city = locationParts[0].trim();
             //regionPlace = locationParts[1].trim();
 
-            sellingRent = 'Not Found'; // Not available on Bina.az
+             // Not available on Bina.az
             documents = 'Not Found'; // Not available on Bina.az
             floor = 'Not Found'; // Not available on Bina.az
             room = 'Not Found'; // Not available on Bina.az
+            scrapePromises.push(
+                scrapeFurther(headers, link)
+                .then($ => {
+                  console.log('Scraping Further!')
+                  const firstLink = $('.product-breadcrumbs__i-link[data-stat="product-breadcrumbs-first"]');
+                  const secondLink = $('.product-breadcrumbs__i-link[data-stat="product-breadcrumbs-second"]');
+                
+                  sellingRent = firstLink.text().trim();
+                  const shortDescription = secondLink.text().trim();
+                
+                  const priceElement = $(element).find('.price-val');
+                  price = priceElement.text().trim();
+                
+                
+                  const addressElement = $('.product-map__left__address');
+                  const address = addressElement.text().trim();
+                
+                  const categoryElement = $('.product-properties__i-name:contains("Kateqoriya")').next('.product-properties__i-value');
+                  const category = categoryElement.text().trim();
+                
+                  const floorElement = $('.product-properties__i-name:contains("Mərtəbə")').next('.product-properties__i-value');
+                  floor = floorElement.text().trim();
+                
+                  const areaElement = $('.product-properties__i-name:contains("Sahə")').next('.product-properties__i-value');
+                  const area = areaElement.text().trim();
+                
+                  const roomNumberElement = $('.product-properties__i-name:contains("Otaq sayı")').next('.product-properties__i-value');
+                  room = roomNumberElement.text().trim();
+                
+                  const repairElement = $('.product-properties__i-name:contains("Təmir")').next('.product-properties__i-value');
+                  const repair = repairElement.text().trim();
+                
+                  const descriptionElement = $('.product-description__content');
+                  description = descriptionElement.text().trim();
+                
+                  const locationElement = $(element).find('.product-map__left__address');
+                  const location = locationElement.text().trim();
+                  
+                  //console.log('Price', price)
+                  //console.log('Address:', address);
+                  //console.log('Category:', category);
+                  //console.log('Floor:', floor);
+                  //console.log('Land Area:', area);
+                  //console.log('Room Number:', room);
+                  //console.log('Repair:', repair);
+                  //console.log('Selling/Rent:', sellingRent);
+                  //console.log('Short Description:', shortDescription);
+                  //console.log('Description:', description);
+                  //console.log('Location', location)
+                  city= address
+
+                  if (price != ''||city != '') {
+                    results.push({
+                      link,
+                      imageURL,
+                      price,
+                      sellingRent,
+                      city,
+                      regionPlace,
+                      floor,
+                      room,
+                      source: website.source,
+                      description
+                    });
+                  }
+                  /* scrapedItemsCount++; // Increment the count of scraped items
+
+                  // If the maximum limit for this website is reached, stop further scraping for this website
+                  if (scrapedItemsCount >= maxItemsPerWebsite) {
+                    return; // Stop further scraping for this website
+                  } */
+                })
+                .catch(error => {
+                  console.log(`An error occurred while scraping further data for ${link}: ${error}`);
+                })
+            )
+
+            
           } else if (website.source === 'Kub.az') {
             //console.log('Im at 2');
             const linkElement = $(element).find('.item-picture a');
             link ='https://kub.az/'+linkElement.attr('href');
-
+            /* scrapeFurther(headers, link)
+            .then($ => {
+              //console.log($);
+            })
+            .catch(error => {
+              console.log(`An error occurred while scraping further data for ${link}: ${error}`);
+            }); */
             const imageElement = $(element).find('.item-picture img');
             imageURL = 'https://kub.az/'+imageElement.attr('src');
 
@@ -313,39 +409,164 @@ const scrapeSite = async (req, res) => {
             //console.log(link, imageURL, price, city, regionPlace, name, created);
         } else if (website.source === 'Yeniemlak.az') {
            
-              const linkElement = $(element).find('a[href^="/elan/"]');
-              const link = 'https://yeniemlak.az' + linkElement.attr('href');
-          
+              const linkElement = $(element).closest('td').find('a[href^="/elan/"]');
+              link = 'https://yeniemlak.az/' + linkElement.attr('href');
+              
               const imageElement = $(element).find('img');
               imageURL = 'https://yeniemlak.az/' + imageElement.attr('src');
-          
+
               const priceElement = $(element).find('.price');
               price = priceElement.text().trim();
-          
+
+              const sellingRentElement = $(element).find('.top-text');
+              sellingRent = sellingRentElement.text().trim();
+
               const locationElement = $(element).find('.bottom b').last();
-              //const locationText = locationElement.text().trim();
-              //const locationParts = locationText.split(',');
-          
-              city = 'Not Found'//locationElement
-              regionPlace = 'Not Found'//locationElement
-          
-              room = 'Not Found'; // Not available on Yeniemlak.az
+              const locationText = locationElement.text().trim();
+              const locationParts = locationText.split(',');
+
+              city = locationParts.length > 1 ? locationParts[1].trim() : 'Not Found';
+              regionPlace = locationParts.length > 0 ? locationParts[0].trim() : 'Not Found';
+
+               // Not available on Yeniemlak.az
               floor = 'Not Found'; // Not available on Yeniemlak.az
-              sellingRent = price; // Extract selling/rent info from adjacent element
               documents = 'Not Found'; // Not available on Yeniemlak.az
-          
-              //console.log(link, imageURL, price, city, regionPlace);
-          }else if (website.source === 'Arenda.az') {
+
+              //console.log(link, imageURL, price, sellingRent, city, regionPlace);
+              scrapePromises.push(
+                  scrapeFurther(headers, link)
+                  .then($ => {
+                    const boxElement = $('.box');
+                  
+                      const propertyTypeElement = boxElement.find('emlak');
+                      const propertyType = propertyTypeElement.text().trim();
+                  
+                      const paramsElements = boxElement.find('.params');
+                      room = $(paramsElements[0]).text().trim();
+                      const area = $(paramsElements[1]).text().trim();
+                      floor = $(paramsElements[2]).text().trim();
+                      const yard = $(paramsElements[3]).text().trim();
+                  
+                      const propertyDetailsElement = boxElement.find('.text');
+                      description = propertyDetailsElement.eq(0).text().trim();
+                  
+                      const checkElements = boxElement.find('.check');
+                      const renovated = checkElements.eq(0).text().trim();
+                      const gas = checkElements.eq(1).text().trim();
+                      const water = checkElements.eq(2).text().trim();
+                      const electricity = checkElements.eq(3).text().trim();
+                      const telephone = checkElements.eq(4).text().trim();
+                      const steelDoor = checkElements.eq(5).text().trim();
+                      const pvcWindows = checkElements.eq(6).text().trim();
+                      const balcony = checkElements.eq(7).text().trim();
+                      const airConditioning = checkElements.eq(8).text().trim();
+                      const kitchenFurniture = checkElements.eq(9).text().trim();
+                      const furnished = checkElements.eq(10).text().trim();
+                      const heatingSystem = checkElements.eq(11).text().trim();
+                  
+                      const addressHeadingElement = boxElement.find('h1:contains("Ünvan")');
+                      const addressElement = addressHeadingElement.next();
+                      city = addressElement.text().trim();
+
+                      const contactHeadingElement = boxElement.find('h1:contains("Contact")');
+                      const nameElement = contactHeadingElement.next();
+                      const name = nameElement.text().trim();
+                      const agentElement = nameElement.next();
+                      const agent = agentElement.text().trim();
+
+                      const telElement = boxElement.find('.tel img');
+                      const phoneNumber = telElement.attr('src').replace('/tel-show/', '');
+
+                      const noteHeadingElement = boxElement.find('h1:contains("Note")');
+                      const noteElement = noteHeadingElement.next();
+                      const note = noteElement.text().trim();
+                      if (price != ''||city != '') {
+                        results.push({
+                          link,
+                          imageURL,
+                          price,
+                          sellingRent,
+                          city,
+                          regionPlace,
+                          floor,
+                          room,
+                          source: website.source,
+                          description
+                        });
+                      }
+
+                  })
+                  .catch(error => {
+                    console.log(`An error occurred while scraping further data for ${link}: ${error}`);
+                  })
+              )
+              
+          } else if (website.source === 'Lalafo.az') {
+           
+            const linkElement = $(element).find('a[href^="/elan/"]');
+            link = 'https://lalafo.az/baku/ads' + linkElement.attr('href');
+        
+            /*scrapeFurther(headers, link)
+            .then($ => {
+                //console.log($);
+            })
+            .catch(error => {
+                console.log(`An error occurred while scraping further data for ${link}: ${error}`);
+            });*/
+        
+            const imageElement = $(element).find('img');
+            imageURL = 'https://lalafo.az/' + imageElement.attr('src');
+        
+            const priceElement = $(element).find('.AdTileHorizontalPrice span');
+            price = priceElement.text().trim();
+        
+            const descriptionElement = $(element).find('.AdTileHorizontalDescription');
+            description = descriptionElement.text().trim();
+        
+            const cityElement = $(element).find('.meta-info__city');
+            city = cityElement.text().trim();
+        
+            const locationElement = $(element).find('.meta-info__location');
+            regionPlace = locationElement.text().trim();
+        
+            room = 'Not Found'; // Not available on Lalafo.az
+            floor = 'Not Found'; // Not available on Lalafo.az
+        
+            const vipElement = $(element).find('.badgePaidFeature font');
+            if (vipElement.text().trim() === 'VIP') {
+                documents = 'VIP'; // Set documents to 'VIP' if the element with text 'VIP' is found.
+            } else {
+                documents = 'Not Found'; // If no 'VIP' element is found, set documents to 'Not Found'.
+            }
+        
+            sellingRent = 'Not Found'; // Not available on Lalafo.az
+            if (price !== '') {
+              results.push({
+                link,
+                imageURL,
+                price,
+                sellingRent,
+                city,
+                regionPlace,
+                floor,
+                room,
+                source: website.source,
+                description
+              });
+            }
+        
+            //console.log(link, imageURL, price, description, city, regionPlace);
+        }else if (website.source === 'Arenda.az') {
             
             const linkElement = $(element).find('a');
             link = linkElement.attr('href');
-        
+
             const imageBoxElement = $(element).find('.full.elan_img_box');
             
             const imageElement = imageBoxElement.find('img');
            
             imageURL = imageElement.attr('data-src');
-            //console.log(imageURL)
+            console.log('Image Link:',imageURL)
         
             const priceElement = $(element).find('.elan_price');
             price = priceElement.text().trim();
@@ -354,37 +575,63 @@ const scrapeSite = async (req, res) => {
             const locationText = locationElement.text().trim();
             const locationParts = locationText.split(',');
         
-            city = 'Not Found'//locationParts[0].trim();
-            regionPlace = 'Not Found'//locationParts[1].trim();
+            city = ''//locationParts[0].trim();
+            regionPlace = ''//locationParts[1].trim()//locationParts[1].trim();
         
-            room = 'Not Found'; // Not available on Arenda.az
-            floor = 'Not Found'; // Not available on Arenda.az
-            sellingRent = price; // Not available on Arenda.az
-            documents = 'Not Found'; // Not available on Arenda.az
-        
+            const tableElement = $(element).find('.n_elan_box_botom_params');
+            room = tableElement.find('td:eq(0)').text().trim();
+            const area = tableElement.find('td:eq(1)').text().trim();
+            floor = tableElement.find('td:eq(2)').text().trim();
+            const sellingRentElement = $(element).find('.elan_property_title');
+            sellingRent = sellingRentElement.text().trim();
+            documents = 'Visit the link for details'; // Not available on Arenda.az
+            
+            scrapePromises.push(
+                scrapeFurther(headers, link)
+                .then($ => {
+                  //console.log($);
+                  
+                  const descriptionElement = $('.full.elan_info_txt > p'); // Select the <p> element inside the div with classes "full" and "elan_info_txt"
+                  description = descriptionElement.text().trim();
+                  if (price !== '') {
+                    results.push({
+                      link,
+                      imageURL,
+                      price,
+                      sellingRent,
+                      city,
+                      regionPlace,
+                      floor,
+                      room,
+                      source: website.source,
+                      description
+                    });
+                  }
+                  /* scrapedItemsCount++; // Increment the count of scraped items
+
+                  // If the maximum limit for this website is reached, stop further scraping for this website
+                  if (scrapedItemsCount >= maxItemsPerWebsite) {
+                    return; // Stop further scraping for this website
+                  } */
+                })
+                .catch(error => {
+                  console.log(`An error occurred while scraping further data for ${link}: ${error}`);
+                })
+            )
+            
             
         }
          
         
-          if(price!=''){
-            results.push({
-            link,
-            imageURL,
-            price,
-            sellingRent,
-            documents,
-            city,
-            regionPlace,
-            floor,
-            room,
-            source: website.source
-          });}
+          
         });
       } else {
         console.log(`Failed to retrieve data from ${website.url}. Status code: ${response.status}`);
       }
     }
 
+    await Promise.all(scrapePromises);
+    
     //console.log(results);
     const htmlContent = generateHTML(results);
     saveHTML(htmlContent);
@@ -395,6 +642,26 @@ const scrapeSite = async (req, res) => {
     console.log(`An error occurred: ${error}`);
     //res.status(500).send('An error occurred during scraping.'); // Stop execution and send error response
   }
+}
+
+const scrapeFurther = async(headers, link) =>{
+  try {
+    
+    const response = await axios.get(link, { headers });
+
+  if (response.status === 200) {
+    console.log('Followning', link)
+    const $ = cheerio.load(response.data);
+    return $
+  }else {
+    console.log(`Failed to retrieve further data from ${website.url}. Status code: ${response.status}`);
+  }
+
+}catch(error){
+    console.log(`An error occurred: ${error}`);
+  }
+
+
 }
 
 
