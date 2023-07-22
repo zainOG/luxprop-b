@@ -8,19 +8,39 @@ function generateHTML(data) {
     <html>
       <head>
         <style>
-          .image-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-          }
-
-          .image-container img {
-            margin: 5px;
-          }
-          a{
-            text-decoration: none;
-            color: black;
-          }
+        .image-container {
+          display: flex;
+          flex-wrap: wrap;
+          border-radius: 10px;
+          justify-content: center;
+        }
+        div.property {
+          width: 400px;
+          padding: 20px;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+      
+        a.property-link {
+          text-decoration: none;
+          color: #333;
+        }
+      
+        a.property-link:hover {
+          text-decoration: underline;
+        }
+      
+        img.property-image {
+          max-width: 100%;
+          height: auto;
+          border-radius: 4px;
+          margin-bottom: 10px;
+        }
+      
+        span.property-label {
+          font-weight: bold;
+        }
           body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -64,6 +84,7 @@ function generateHTML(data) {
         
           input[type="submit"] {
             background-color: #4caf50;
+            border-radius: 10px;
             color: #fff;
             cursor: pointer;
           }
@@ -181,18 +202,19 @@ function generateHTML(data) {
   data.forEach(property => {
     const { link, imageURL, price, sellingRent, city, regionPlace, floor, room, source, description } = property;
     html += `
-      <div>
-        <a href="${link}" target="_blank"><img src="${imageURL}" data-src="${imageURL}"/><br>
-        <span>Price: ${price}</span><br>
-        <span>Selling/Rent: ${sellingRent}</span><br>
-        <span>City: ${city}</span><br>
-        <span>Region/Place: ${regionPlace}</span><br>
-        <span>Floor: ${floor}</span><br>
-        <span>Room: ${room}</span><br>
-        <span>Description: ${description}</span><br>
-        <span>Source: ${source}</span></a>
-        
-      </div>
+    <div class="property">
+      <a class="property-link" href="${link}" target="_blank">
+        <img class="property-image" src="${imageURL}" data-src="${imageURL}" alt="Property Image">
+        <span class="property-label">Price:</span> ${price}<br>
+        <span class="property-label">Selling/Rent:</span> ${sellingRent}<br>
+        <span class="property-label">City:</span> ${city}<br>
+        <span class="property-label">Region/Place:</span> ${regionPlace}<br>
+        <span class="property-label">Floor:</span> ${floor}<br>
+        <span class="property-label">Room:</span> ${room}<br>
+        <span class="property-label">Description:</span> ${description}<br>
+        <span class="property-label">Source:</span> ${source}
+      </a>
+    </div>
     `;
   });
 
@@ -574,10 +596,11 @@ const scrapeSite = async (req, res) => {
             const locationElement = $(element).find('.elan_unvan');
             const locationText = locationElement.text().trim();
             const locationParts = locationText.split(',');
+            console.log('Location Parts', locationParts, 'Locaion Element', locationText)
+            city = locationParts.length > 0 ? locationParts[0].trim() : 'Not Found';
+            regionPlace = locationParts.length > 1 ? locationParts[1].trim() : city;
         
-            city = ''//locationParts[0].trim();
-            regionPlace = ''//locationParts[1].trim()//locationParts[1].trim();
-        
+            console.log('Location Parts', locationParts, 'City', city, regionPlace)
             const tableElement = $(element).find('.n_elan_box_botom_params');
             room = tableElement.find('td:eq(0)').text().trim();
             const area = tableElement.find('td:eq(1)').text().trim();
