@@ -98,103 +98,104 @@ function generateHTML(data) {
       </head>
       <body>
       <form action="search_results.html" method="GET">
-      <div class="form-column">
-      <label for="object-type">Type of Object:</label>
-      <select name="object-type" id="object-type">
-        <option value="house">House</option>
-        <option value="apartment">Apartment</option>
-        <option value="office">Office</option>
-        <!-- Add more options as needed -->
-      </select>
-      <br>
-    
-      <label for="building-type">Type of Building:</label>
-      <select name="building-type" id="building-type">
-        <option value="residential">Residential</option>
-        <option value="commercial">Commercial</option>
-        <!-- Add more options as needed -->
-      </select>
-      <br>
-    
-      <label for="announcement-type">Type of Announcement:</label>
-      <select name="announcement-type" id="announcement-type">
-        <option value="sale">Sale</option>
-        <option value="rent">Rent</option>
-        <!-- Add more options as needed -->
-      </select>
-      <br>
-    
-      <label for="vendor-type">Vendor Type:</label>
-      <select name="vendor-type" id="vendor-type">
-        <option value="individual">Individual</option>
-        <option value="agency">Agency</option>
-        <!-- Add more options as needed -->
-      </select>
-      <br>
-    
-      <label for="city">City:</label>
-      <input type="text" name="city" id="city">
-      <br>
-    
-      <label for="district">District:</label>
-      <input type="text" name="district" id="district">
-      <br>
-    
-      <label for="metro">Metro:</label>
-      <input type="text" name="metro" id="metro">
-      <br>
-    
-      <label for="cave">The Cave:</label>
-      <input type="text" name="cave" id="cave">
-      <br>
-    
-      <label for="bookmark">Bookmark:</label>
-      <input type="text" name="bookmark" id="bookmark">
-      <br>
-    
-      <label for="keywords">By Words:</label>
-      <input type="text" name="keywords" id="keywords">
-      <br>
-      </div>
-      <div class="form-column">    
-      <label for="document">Document:</label>
-      <input type="text" name="document" id="document">
-      <br>
-    
-      <label for="credit-condition">Credit Condition:</label>
-      <input type="text" name="credit-condition" id="credit-condition">
-      <br>
-    
-      <label for="room-number">Room Number:</label>
-      <input type="number" name="room-number" id="room-number">
-      <br>
-    
-      <label for="editing">Editing:</label>
-      <input type="text" name="editing" id="editing">
-      <br>
-    
-      <label for="floor">Floor:</label>
-      <input type="number" name="floor" id="floor">
-      <br>
-    
-      <input type="checkbox" name="not-last-floor" id="not-last-floor">
-      <label for="not-last-floor">Not the Last Floor</label>
-      <br>
-    
-      <label for="building-floor">Building Floor Number:</label>
-      <input type="number" name="building-floor" id="building-floor">
-      <br>
-    
-      <label for="price">Price:</label>
-      <input type="number" name="price" id="price">
-      <br>
-    
-      <label for="field">Field (m2):</label>
-      <input type="number" name="field" id="field">
-      <br>
-      </div>    
-      <input type="submit" value="Search">
-    </form>
+    <div class="form-column">
+        <label for="object-type">Obyektin növü:</label>
+        <select name="object-type" id="object-type">
+            <option value="house">Ev</option>
+            <option value="apartment">Mənzil</option>
+            <option value="office">Ofis</option>
+            <!-- Digər seçimləri də əlavə edin -->
+        </select>
+        <br>
+
+        <label for="building-type">Binanın növü:</label>
+        <select name="building-type" id="building-type">
+            <option value="residential">Yaşayış binası</option>
+            <option value="commercial">Ticarət binası</option>
+            <!-- Digər seçimləri də əlavə edin -->
+        </select>
+        <br>
+
+        <label for="announcement-type">Elanın növü:</label>
+        <select name="announcement-type" id="announcement-type">
+            <option value="sale">Satış</option>
+            <option value="rent">Kirayə</option>
+            <!-- Digər seçimləri də əlavə edin -->
+        </select>
+        <br>
+
+        <label for="vendor-type">Satıcı növü:</label>
+        <select name="vendor-type" id="vendor-type">
+            <option value="individual">Fiziki şəxs</option>
+            <option value="agency">Agentlik</option>
+            <!-- Digər seçimləri də əlavə edin -->
+        </select>
+        <br>
+
+        <label for="city">Şəhər:</label>
+        <input type="text" name="city" id="city">
+        <br>
+
+        <label for="district">Rayon:</label>
+        <input type="text" name="district" id="district">
+        <br>
+
+        <label for="metro">Metro:</label>
+        <input type="text" name="metro" id="metro">
+        <br>
+
+        <label for="cave">Qəsəbə:</label>
+        <input type="text" name="cave" id="cave">
+        <br>
+
+        <label for="bookmark">Əv əlavəsi:</label>
+        <input type="text" name="bookmark" id="bookmark">
+        <br>
+
+        <label for="keywords">Açar sözlərlə:</label>
+        <input type="text" name="keywords" id="keywords">
+        <br>
+    </div>
+    <div class="form-column">    
+        <label for="document">Sənəd növü:</label>
+        <input type="text" name="document" id="document">
+        <br>
+
+        <label for="credit-condition">Kredit şərtləri:</label>
+        <input type="text" name="credit-condition" id="credit-condition">
+        <br>
+
+        <label for="room-number">Otaq sayı:</label>
+        <input type="number" name="room-number" id="room-number">
+        <br>
+
+        <label for="editing">Redaktə:</label>
+        <input type="text" name="editing" id="editing">
+        <br>
+
+        <label for="floor">Mərtəbə:</label>
+        <input type="number" name="floor" id="floor">
+        <br>
+
+        <input type="checkbox" name="not-last-floor" id="not-last-floor">
+        <label for="not-last-floor">Axırıncı mərtəbə deyil</label>
+        <br>
+
+        <label for="building-floor">Binanın mərtəbə sayı:</label>
+        <input type="number" name="building-floor" id="building-floor">
+        <br>
+
+        <label for="price">Qiymət:</label>
+        <input type="number" name="price" id="price">
+        <br>
+
+        <label for="field">Sahə (m2):</label>
+        <input type="number" name="field" id="field">
+        <br>
+    </div>    
+    <input type="submit" value="Axtar">
+  </form>
+
       
         <div class="image-container">
         `;
@@ -205,14 +206,14 @@ function generateHTML(data) {
     <div class="property">
       <a class="property-link" href="${link}" target="_blank">
         <img class="property-image" src="${imageURL}" data-src="${imageURL}" alt="Property Image">
-        <span class="property-label">Price:</span> ${price}<br>
-        <span class="property-label">Selling/Rent:</span> ${sellingRent}<br>
-        <span class="property-label">City:</span> ${city}<br>
-        <span class="property-label">Region/Place:</span> ${regionPlace}<br>
-        <span class="property-label">Floor:</span> ${floor}<br>
-        <span class="property-label">Room:</span> ${room}<br>
-        <span class="property-label">Description:</span> ${description}<br>
-        <span class="property-label">Source:</span> ${source}
+        <span class="property-label">Qiymət:</span> ${price}<br>
+        <span class="property-label">Satılır/Kirayə:</span> ${sellingRent}<br>
+        <span class="property-label">Küçə:</span> ${city}<br>
+        <span class="property-label">Region:</span> ${regionPlace}<br>
+        <span class="property-label">Mərtəbə:</span> ${floor}<br>
+        <span class="property-label">Otaq:</span> ${room}<br>
+        <span class="property-label">İnformasiya:</span> ${description}<br>
+        <span class="property-label">Mənbə:</span> ${source}
       </a>
     </div>
     `;
