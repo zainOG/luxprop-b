@@ -202,7 +202,8 @@ function generateHTML(data) {
 
   data.forEach(property => {
     const { link, imageURL, price, sellingRent, city, regionPlace, floor, room, source, description } = property;
-    html += `
+    if(description!=''){
+      html += `
     <div class="property">
       <a class="property-link" href="${link}" target="_blank">
         <img class="property-image" src="${imageURL}" data-src="${imageURL}" alt="Property Image">
@@ -216,7 +217,7 @@ function generateHTML(data) {
         <span class="property-label">Mənbə:</span> ${source}
       </a>
     </div>
-    `;
+    `;}
   });
 
   html += `
