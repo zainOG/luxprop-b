@@ -2,6 +2,33 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const cron = require('node-cron');
 const fs = require('fs');
+const Properties = require('../models/properties')
+
+
+const createProperties = async (data) => {
+  for (const property of data) {
+    const { link, imageURL, price, sellingRent, city, regionPlace, floor, room, source, description, ownerType } = property;
+
+    if (description !== '') {
+      const propertiesData = {
+        link,
+        imageURL,
+        price,
+        sellingRent,
+        city,
+        regionPlace,
+        floor,
+        room,
+        source,
+        description,
+        ownerType,
+      };
+
+      await Properties.create({ propertiesData }, { timeout: 5000 });
+      console.log("Creating")
+    }
+  }
+}
 
 function generateHTML(data) {
   let html = `
@@ -233,7 +260,7 @@ function generateHTML(data) {
 function saveHTML(content) {
   fs.readFile('views/index.html', 'utf8', (err, data) => {
     if (err) {
-      console.log(`Failed to read HTML file: ${err}`);
+      ////console.log(`Failed to read HTML file: ${err}`);
       return;
     }
     
@@ -241,9 +268,9 @@ function saveHTML(content) {
     
     fs.writeFile('views/index.html', combinedContent, (err) => {
       if (err) {
-        console.log(`Failed to save HTML file: ${err}`);
+        ////console.log(`Failed to save HTML file: ${err}`);
       } else {
-        console.log('HTML file saved successfully.');
+        ////console.log('HTML file saved successfully.');
       }
     });
   });
@@ -270,7 +297,7 @@ const scrapeSite = async (req, res) => {
 
 
     for (const website of websites) {
-      console.log(website.url)
+      ////console.log(website.url)
       const response = await axios.get(website.url, { headers });
 
       if (response.status === 200) {
@@ -291,7 +318,7 @@ const scrapeSite = async (req, res) => {
         }
 
         propertyItems.each((index, element) => {
-          let link, imageURL, price, sellingRent, city, regionPlace, floor, room, description;
+          let link, imageURL, price, sellingRent, city, regionPlace, floor, room, description, ownerType;
 
           if (scrapedItemsCount >= maxItemsPerWebsite) {
             return; // Stop further scraping for this website
@@ -310,9 +337,9 @@ const scrapeSite = async (req, res) => {
             regionPlace = locationElement.text().trim();
             city = locationElement.text().trim();
             //const locationParts = locationText.split(',');
-            console.log('Region', regionPlace)
-            console.log('Image URL', imageURL)
-            //console.log('Price', price)
+            ////console.log('Region', regionPlace)
+            ////console.log('Image URL', imageURL)
+            //////console.log('Price', price)
             //city = locationParts[0].trim();
             //regionPlace = locationParts[1].trim();
 
@@ -323,7 +350,7 @@ const scrapeSite = async (req, res) => {
             scrapePromises.push(
                 scrapeFurther(headers, link)
                 .then($ => {
-                  console.log('Scraping Further!')
+                  ////console.log('Scraping Further!')
                   const firstLink = $('.product-breadcrumbs__i-link[data-stat="product-breadcrumbs-first"]');
                   const secondLink = $('.product-breadcrumbs__i-link[data-stat="product-breadcrumbs-second"]');
                 
@@ -357,18 +384,26 @@ const scrapeSite = async (req, res) => {
                 
                   const locationElement = $(element).find('.product-map__left__address');
                   const location = locationElement.text().trim();
-                  
-                  //console.log('Price', price)
-                  //console.log('Address:', address);
-                  //console.log('Category:', category);
-                  //console.log('Floor:', floor);
-                  //console.log('Land Area:', area);
-                  //console.log('Room Number:', room);
-                  //console.log('Repair:', repair);
-                  //console.log('Selling/Rent:', sellingRent);
-                  //console.log('Short Description:', shortDescription);
-                  //console.log('Description:', description);
-                  //console.log('Location', location)
+
+                  const ownerNameElement = $('.product-owner__info-name');
+                  const ownerName = ownerNameElement.text().trim();
+
+                  const ownerRegionElement = $('.product-owner__info-region');
+                  const ownerRegion = ownerRegionElement.text().trim();
+
+                  console.log(website.source, "\n", "Owner Details: ", ownerName, ownerRegion)
+                  ownerType = ownerRegion
+                  //////console.log('Price', price)
+                  //////console.log('Address:', address);
+                  //////console.log('Category:', category);
+                  //////console.log('Floor:', floor);
+                  //////console.log('Land Area:', area);
+                  //////console.log('Room Number:', room);
+                  //////console.log('Repair:', repair);
+                  //////console.log('Selling/Rent:', sellingRent);
+                  //////console.log('Short Description:', shortDescription);
+                  //////console.log('Description:', description);
+                  //////console.log('Location', location)
                   city= address
 
                   if (price != ''||city != '') {
@@ -382,7 +417,8 @@ const scrapeSite = async (req, res) => {
                       floor,
                       room,
                       source: website.source,
-                      description
+                      description,
+                      ownerType
                     });
                   }
                   /* scrapedItemsCount++; // Increment the count of scraped items
@@ -393,21 +429,21 @@ const scrapeSite = async (req, res) => {
                   } */
                 })
                 .catch(error => {
-                  console.log(`An error occurred while scraping further data for ${link}: ${error}`);
+                  ////console.log(`An error occurred while scraping further data for ${link}: ${error}`);
                 })
             )
 
             
           } else if (website.source === 'Kub.az') {
-            //console.log('Im at 2');
+            //////console.log('Im at 2');
             const linkElement = $(element).find('.item-picture a');
             link ='https://kub.az/'+linkElement.attr('href');
             /* scrapeFurther(headers, link)
             .then($ => {
-              //console.log($);
+              //////console.log($);
             })
             .catch(error => {
-              console.log(`An error occurred while scraping further data for ${link}: ${error}`);
+              ////console.log(`An error occurred while scraping further data for ${link}: ${error}`);
             }); */
             const imageElement = $(element).find('.item-picture img');
             imageURL = 'https://kub.az/'+imageElement.attr('src');
@@ -430,7 +466,7 @@ const scrapeSite = async (req, res) => {
             floor = 'Not Found'; // Not available in the provided HTML structure
             room = 'Not Found'; // Not available in the provided HTML structure
         
-            //console.log(link, imageURL, price, city, regionPlace, name, created);
+            //////console.log(link, imageURL, price, city, regionPlace, name, created);
         } else if (website.source === 'Yeniemlak.az') {
            
               const linkElement = $(element).closest('td').find('a[href^="/elan/"]');
@@ -456,7 +492,7 @@ const scrapeSite = async (req, res) => {
               floor = 'Not Found'; // Not available on Yeniemlak.az
               documents = 'Not Found'; // Not available on Yeniemlak.az
 
-              //console.log(link, imageURL, price, sellingRent, city, regionPlace);
+              //////console.log(link, imageURL, price, sellingRent, city, regionPlace);
               scrapePromises.push(
                   scrapeFurther(headers, link)
                   .then($ => {
@@ -504,6 +540,14 @@ const scrapeSite = async (req, res) => {
                       const noteHeadingElement = boxElement.find('h1:contains("Note")');
                       const noteElement = noteHeadingElement.next();
                       const note = noteElement.text().trim();
+                      /* //console.log("Scraped:\n",
+                      "yard", yard,
+                      "Name", name,
+                       "Agent", agent,
+                       "phone number", phoneNumber,
+                       "note", note
+
+                      ) */
                       if (price != ''||city != '') {
                         results.push({
                           link,
@@ -521,7 +565,7 @@ const scrapeSite = async (req, res) => {
 
                   })
                   .catch(error => {
-                    console.log(`An error occurred while scraping further data for ${link}: ${error}`);
+                    //console.log(`An error occurred while scraping further data for ${link}: ${error}`);
                   })
               )
               
@@ -532,10 +576,10 @@ const scrapeSite = async (req, res) => {
         
             /*scrapeFurther(headers, link)
             .then($ => {
-                //console.log($);
+                //////console.log($);
             })
             .catch(error => {
-                console.log(`An error occurred while scraping further data for ${link}: ${error}`);
+                ////console.log(`An error occurred while scraping further data for ${link}: ${error}`);
             });*/
         
             const imageElement = $(element).find('img');
@@ -579,7 +623,7 @@ const scrapeSite = async (req, res) => {
               });
             }
         
-            //console.log(link, imageURL, price, description, city, regionPlace);
+            //////console.log(link, imageURL, price, description, city, regionPlace);
         }else if (website.source === 'Arenda.az') {
             
             const linkElement = $(element).find('a');
@@ -590,7 +634,7 @@ const scrapeSite = async (req, res) => {
             const imageElement = imageBoxElement.find('img');
            
             imageURL = imageElement.attr('data-src');
-            console.log('Image Link:',imageURL)
+            ////console.log('Image Link:',imageURL)
         
             const priceElement = $(element).find('.elan_price');
             price = priceElement.text().trim();
@@ -598,11 +642,11 @@ const scrapeSite = async (req, res) => {
             const locationElement = $(element).find('.elan_unvan');
             const locationText = locationElement.text().trim();
             const locationParts = locationText.split(',');
-            console.log('Location Parts', locationParts, 'Locaion Element', locationText)
+            ////console.log('Location Parts', locationParts, 'Locaion Element', locationText)
             city = locationParts.length > 0 ? locationParts[0].trim() : 'Not Found';
             regionPlace = locationParts.length > 1 ? locationParts[1].trim() : city;
         
-            console.log('Location Parts', locationParts, 'City', city, regionPlace)
+            ////console.log('Location Parts', locationParts, 'City', city, regionPlace)
             const tableElement = $(element).find('.n_elan_box_botom_params');
             room = tableElement.find('td:eq(0)').text().trim();
             const area = tableElement.find('td:eq(1)').text().trim();
@@ -614,7 +658,7 @@ const scrapeSite = async (req, res) => {
             scrapePromises.push(
                 scrapeFurther(headers, link)
                 .then($ => {
-                  //console.log($);
+                  //////console.log($);
                   
                   const descriptionElement = $('.full.elan_info_txt > p'); // Select the <p> element inside the div with classes "full" and "elan_info_txt"
                   description = descriptionElement.text().trim();
@@ -640,7 +684,7 @@ const scrapeSite = async (req, res) => {
                   } */
                 })
                 .catch(error => {
-                  console.log(`An error occurred while scraping further data for ${link}: ${error}`);
+                  ////console.log(`An error occurred while scraping further data for ${link}: ${error}`);
                 })
             )
             
@@ -651,20 +695,22 @@ const scrapeSite = async (req, res) => {
           
         });
       } else {
-        console.log(`Failed to retrieve data from ${website.url}. Status code: ${response.status}`);
+        ////console.log(`Failed to retrieve data from ${website.url}. Status code: ${response.status}`);
       }
     }
 
     await Promise.all(scrapePromises);
     
-    //console.log(results);
+    //////console.log(results);
     const htmlContent = generateHTML(results);
+    await createProperties(results)
+    
     saveHTML(htmlContent);
 
-    console.log('Scraped data saved to HTML file.');
+    ////console.log('Scraped data saved to HTML file.');
     //res.send('Scraping complete.'); // Stop execution and send response
   } catch (error) {
-    console.log(`An error occurred: ${error}`);
+    ////console.log(`An error occurred: ${error}`);
     //res.status(500).send('An error occurred during scraping.'); // Stop execution and send error response
   }
 }
@@ -675,15 +721,15 @@ const scrapeFurther = async(headers, link) =>{
     const response = await axios.get(link, { headers });
 
   if (response.status === 200) {
-    console.log('Followning', link)
+    ////console.log('Followning', link)
     const $ = cheerio.load(response.data);
     return $
   }else {
-    console.log(`Failed to retrieve further data from ${website.url}. Status code: ${response.status}`);
+    ////console.log(`Failed to retrieve further data from ${website.url}. Status code: ${response.status}`);
   }
 
 }catch(error){
-    console.log(`An error occurred: ${error}`);
+    ////console.log(`An error occurred: ${error}`);
   }
 
 
@@ -692,11 +738,11 @@ const scrapeFurther = async(headers, link) =>{
 
 
 
-cron.schedule('*/5 * * * *',   () => {
-  console.log('Running scraper...');
+/* cron.schedule('//*this other slace was here and commented!\5 * * * *',   () => {
+  ////console.log('Running scraper...');
   scrapeSite().catch(error => {
-    console.log(`An error occurred in the scheduled task: ${error}`);
+    ////console.log(`An error occurred in the scheduled task: ${error}`);
   });
 }); 
-
+ */
 module.exports = { scrapeSite };
