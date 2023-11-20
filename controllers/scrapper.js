@@ -7,7 +7,7 @@ const Properties = require('../models/properties')
 
 const createProperties = async (data) => {
   for (const property of data) {
-    const { link, imageURL, price, sellingRent, city, regionPlace, floor, room, source, description, ownerType } = property;
+    const { link, imageURL, price, sellingRent, city, regionPlace, floor, room, source, description, ownerType, propertyCategory } = property;
 
     if (description !== '') {
       const propertiesData = {
@@ -22,6 +22,7 @@ const createProperties = async (data) => {
         source,
         description,
         ownerType,
+        propertyCategory
       };
 
       await Properties.create({ propertiesData }, { timeout: 5000 });
@@ -318,7 +319,7 @@ const scrapeSite = async (req, res) => {
         }
 
         propertyItems.each((index, element) => {
-          let link, imageURL, price, sellingRent, city, regionPlace, floor, room, description, ownerType;
+          let link, imageURL, price, sellingRent, city, regionPlace, floor, room, description, ownerType, propertyCategory;
 
           if (scrapedItemsCount >= maxItemsPerWebsite) {
             return; // Stop further scraping for this website
@@ -378,6 +379,10 @@ const scrapeSite = async (req, res) => {
                 
                   const repairElement = $('.product-properties__i-name:contains("Təmir")').next('.product-properties__i-value');
                   const repair = repairElement.text().trim();
+
+                  const propertyCategoryElement = $('.product-properties__i-name:contains("Kateqoriya")').next('.product-properties__i-value');
+                  propertyCategory = propertyCategoryElement.text().trim();
+                  
                 
                   const descriptionElement = $('.product-description__content');
                   description = descriptionElement.text().trim();
@@ -391,7 +396,7 @@ const scrapeSite = async (req, res) => {
                   const ownerRegionElement = $('.product-owner__info-region');
                   const ownerRegion = ownerRegionElement.text().trim();
 
-                  console.log(website.source, "\n", "Owner Details: ", ownerName, ownerRegion)
+                  console.log(website.source, "\n", "Owner Details: ", ownerName, ownerRegion, "\nCategory: ", propertyCategory)
                   ownerType = ownerRegion
                   //////console.log('Price', price)
                   //////console.log('Address:', address);
@@ -418,7 +423,8 @@ const scrapeSite = async (req, res) => {
                       room,
                       source: website.source,
                       description,
-                      ownerType
+                      ownerType,
+                      propertyCategory
                     });
                   }
                   /* scrapedItemsCount++; // Increment the count of scraped items
@@ -702,10 +708,10 @@ const scrapeSite = async (req, res) => {
     await Promise.all(scrapePromises);
     
     //////console.log(results);
-    const htmlContent = generateHTML(results);
+    /* const htmlContent = generateHTML(results); */
     await createProperties(results)
     
-    saveHTML(htmlContent);
+   /*  saveHTML(htmlContent); */
 
     ////console.log('Scraped data saved to HTML file.');
     //res.send('Scraping complete.'); // Stop execution and send response
@@ -736,13 +742,13 @@ const scrapeFurther = async(headers, link) =>{
 }
 
 
+/* 
 
-
-/* cron.schedule('//*this other slace was here and commented!\5 * * * *',   () => {
+cron.schedule('*//*5 * * * *',   () => {
   ////console.log('Running scraper...');
   scrapeSite().catch(error => {
     ////console.log(`An error occurred in the scheduled task: ${error}`);
   });
-}); 
- */
+});  */
+
 module.exports = { scrapeSite };

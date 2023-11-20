@@ -12,7 +12,8 @@ const mongoose = require('mongoose')
 const {logEvents}= require('./middleware/logger')
 const bodyParser = require('body-parser');
 const PORT =process.env.PORT || 3500
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const Session = require('./models/session')
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
@@ -25,6 +26,39 @@ app.use(logger)
 app.use(cors(corsOptions))
 
 app.use(express.json())
+
+app.post('/api/v1/store', async (req, res) => {
+    try {
+      
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'One-Time Lux Properties Subscription',
+            },
+            unit_amount: 120000, // 120, 000 cents = $1200.00
+          },
+          quantity: 1,
+        }],
+        mode: 'payment',
+        success_url: 'https://main.d2uw14r4mivh3i.amplifyapp.com/success',
+        cancel_url: 'https://main.d2uw14r4mivh3i.amplifyapp.com/cancel',
+        customer_email: req.body.email
+      });
+      const createSession = await Session.create({sessionData:{id: session.id, customer_email: req.body.email}}) 
+      if(createSession){
+        console.log("Session Created")
+      }
+      return res.json({ key: process.env.STRIPE_PUBLIC_KEY, sessionId: session.id });
+    } catch (error) {
+      console.error('Error creating Checkout Session:', error.message);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+app.use('/api/v1/purchase', require('./routes/successsRoute'))
 
 app.use(cookieParser())
 
