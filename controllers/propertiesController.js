@@ -8,18 +8,20 @@ const sendEmail = require("../utils/email/sendEmail");
 // @access Private
 
 const getAllPropertiess = asyncHandler(async (req, res) => {
-    const limit = 10000; // Set the limit to 200 properties per request
+    const limit = 40000; // Set the limit to 200 properties per request
     const page = req.query.page || 1; // You can use query parameters to specify the page if needed
   
     const skip = (page - 1) * limit; // Calculate the number of documents to skip based on the page
   
     try {
       const propertiess = await Properties.find().skip(skip).limit(limit).lean();
-  
+    
       if (!propertiess?.length) {
         return res.status(400).json({ message: 'No propertiess found' });
       }
+      console.log("Got properties")
       const send = propertiess.filter(property=> property.propertiesData?.source==="Bina.az")
+      console.log("Filtered Properties")
       res.json(send);
     } catch (error) {
       return res.status(500).json({ message: 'Internal server error' });

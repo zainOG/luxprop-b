@@ -7,7 +7,7 @@ const Properties = require('../models/properties')
 
 const createProperties = async (data) => {
   for (const property of data) {
-    const { link, imageURL, price, sellingRent, city, regionPlace, floor, room, source, description, ownerType, propertyCategory } = property;
+    const { link, imageURL, price, sellingRent, city, regionPlace, floor, room, source, description, ownerType, propertyCategory, mortgage, area } = property;
 
     if (description !== '') {
       const propertiesData = {
@@ -22,10 +22,12 @@ const createProperties = async (data) => {
         source,
         description,
         ownerType,
-        propertyCategory
+        propertyCategory,
+        mortgage, 
+        area
       };
 
-      await Properties.create({ propertiesData }, { timeout: 5000 });
+      await Properties.create({ propertiesData }, { timeout: 1000 });
       console.log("Creating")
     }
   }
@@ -319,7 +321,7 @@ const scrapeSite = async (req, res) => {
         }
 
         propertyItems.each((index, element) => {
-          let link, imageURL, price, sellingRent, city, regionPlace, floor, room, description, ownerType, propertyCategory;
+          let link, imageURL, price, sellingRent, city, regionPlace, floor, room, description, ownerType, propertyCategory, mortgage, area;
 
           if (scrapedItemsCount >= maxItemsPerWebsite) {
             return; // Stop further scraping for this website
@@ -372,7 +374,7 @@ const scrapeSite = async (req, res) => {
                   floor = floorElement.text().trim();
                 
                   const areaElement = $('.product-properties__i-name:contains("Sahə")').next('.product-properties__i-value');
-                  const area = areaElement.text().trim();
+                  area = areaElement.text().trim();
                 
                   const roomNumberElement = $('.product-properties__i-name:contains("Otaq sayı")').next('.product-properties__i-value');
                   room = roomNumberElement.text().trim();
@@ -396,7 +398,7 @@ const scrapeSite = async (req, res) => {
                   const ownerRegionElement = $('.product-owner__info-region');
                   const ownerRegion = ownerRegionElement.text().trim();
 
-                  console.log(website.source, "\n", "Owner Details: ", ownerName, ownerRegion, "\nCategory: ", propertyCategory)
+                  
                   ownerType = ownerRegion
                   //////console.log('Price', price)
                   //////console.log('Address:', address);
@@ -410,6 +412,11 @@ const scrapeSite = async (req, res) => {
                   //////console.log('Description:', description);
                   //////console.log('Location', location)
                   city= address
+                  const mortgageElement = $('.product-properties__i-name:contains("İpoteka")').next('.product-properties__i-value');
+                  mortgage = mortgageElement.text().trim();
+                 
+
+                  console.log(website.source, "\n", "Owner Details: ", ownerName, ownerRegion, "\nCategory: ", propertyCategory,"Mortgage", mortgage)
 
                   if (price != ''||city != '') {
                     results.push({
@@ -424,7 +431,9 @@ const scrapeSite = async (req, res) => {
                       source: website.source,
                       description,
                       ownerType,
-                      propertyCategory
+                      propertyCategory,
+                      mortgage, 
+                      area
                     });
                   }
                   /* scrapedItemsCount++; // Increment the count of scraped items
@@ -472,7 +481,7 @@ const scrapeSite = async (req, res) => {
             floor = 'Not Found'; // Not available in the provided HTML structure
             room = 'Not Found'; // Not available in the provided HTML structure
         
-            //////console.log(link, imageURL, price, city, regionPlace, name, created);
+           console.log("On Kub.az",link, imageURL, price, city, regionPlace, name, created);
         } else if (website.source === 'Yeniemlak.az') {
            
               const linkElement = $(element).closest('td').find('a[href^="/elan/"]');
@@ -742,13 +751,13 @@ const scrapeFurther = async(headers, link) =>{
 }
 
 
-/* 
 
-cron.schedule('*//*5 * * * *',   () => {
+
+cron.schedule('*/10 * * * *',   () => {
   ////console.log('Running scraper...');
   scrapeSite().catch(error => {
     ////console.log(`An error occurred in the scheduled task: ${error}`);
   });
-});  */
+});
 
 module.exports = { scrapeSite };
