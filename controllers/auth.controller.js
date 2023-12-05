@@ -90,14 +90,13 @@ const resetPasswordController = async (req, res, next) => {
 };
 const sendLoanMailController = async (req, res, next) => {
   const {email, phone, name} = req.body
-  console.log(email, phone, name)
-
+  
   if(!email||!phone||!name) {
     return res.status(400).json({message: 'All Fields Required'})
   }
 
 
-  sendEmail(
+  await sendEmail(
     "zainvicee@gmail.com",
     "You have recieved a new Order!",
     {
@@ -109,11 +108,35 @@ const sendLoanMailController = async (req, res, next) => {
   );
 
 
-  return res.status(200).json({ message: `Password reset successfull` });
+  return res.status(200).json({ message: `Request Submitted` });
+};
+const confirmEmailController = async (req, res, next) => {
+  const {email, code} = req.body
+  
+ 
+  if(!email||!code) {
+    return res.status(400).json({message: 'All Fields Required'})
+  }
+
+
+  await sendEmail(
+    email,
+    "Email Confirmation!",
+    {
+     
+      email: email,
+      code: code,
+    },
+    "./template/emailConfirmation.handlebars"
+  );
+
+
+  return res.status(200).json({ message: `Email sent for confirmation` });
 };
 
 module.exports = {
   resetPasswordRequestController,
   resetPasswordController,
   sendLoanMailController,
+  confirmEmailController,
 };
