@@ -89,9 +89,9 @@ const resetPasswordController = async (req, res, next) => {
   return res.status(200).json({ message: `Password reset successfull` });
 };
 const sendLoanMailController = async (req, res, next) => {
-  const {email, phone, name} = req.body
+  const {email, phone, name, message} = req.body
   
-  if(!email||!phone||!name) {
+  if(!email||!phone||!name||!message) {
     return res.status(400).json({message: 'All Fields Required'})
   }
 
@@ -103,6 +103,7 @@ const sendLoanMailController = async (req, res, next) => {
       name: name,
       email: email,
       phone: phone,
+      message: message,
     },
     "./template/loanRequest.handlebars"
   );
