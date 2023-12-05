@@ -88,8 +88,32 @@ const resetPasswordController = async (req, res, next) => {
 
   return res.status(200).json({ message: `Password reset successfull` });
 };
+const sendLoanMailController = async (req, res, next) => {
+  const {email, phone, name} = req.body
+  console.log(email, phone, name)
+
+  if(!email||!phone||!name) {
+    return res.status(400).json({message: 'All Fields Required'})
+  }
+
+
+  sendEmail(
+    "zainvicee@gmail.com",
+    "You have recieved a new Order!",
+    {
+      name: name,
+      email: email,
+      phone: phone,
+    },
+    "./template/loanRequest.handlebars"
+  );
+
+
+  return res.status(200).json({ message: `Password reset successfull` });
+};
 
 module.exports = {
   resetPasswordRequestController,
   resetPasswordController,
+  sendLoanMailController,
 };

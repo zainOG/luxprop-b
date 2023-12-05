@@ -21,7 +21,7 @@ const sendEmail = async (email, subject, payload, template) => {
   
     const options = () => {
       return {
-        from: `"Lux Properties Ⓡ" <${process.env.FROM_EMAIL}>`,
+        from: `"Emlakci Ⓡ" <${process.env.FROM_EMAIL}>`,
         to: email,
         subject: subject,
         html: compiledTemplate(payload),
