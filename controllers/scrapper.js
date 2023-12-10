@@ -7,7 +7,7 @@ const Properties = require('../models/properties')
 
 const createProperties = async (data) => {
   for (const property of data) {
-    const { link, imageURL, price, sellingRent, city, regionPlace, floor, room, source, description, ownerType, propertyCategory, mortgage, area } = property;
+    const { link, imageURL, price, sellingRent, city, regionPlace, floor, room, source, description, ownerType, propertyCategory, mortgage, area, editing } = property;
 
     if (description !== '') {
       const propertiesData = {
@@ -24,7 +24,8 @@ const createProperties = async (data) => {
         ownerType,
         propertyCategory,
         mortgage, 
-        area
+        area, 
+        editing
       };
 
       await Properties.create({ propertiesData }, { timeout: 1000 });
@@ -321,7 +322,7 @@ const scrapeSite = async (req, res) => {
         }
 
         propertyItems.each((index, element) => {
-          let link, imageURL, price, sellingRent, city, regionPlace, floor, room, description, ownerType, propertyCategory, mortgage, area;
+          let link, imageURL, price, sellingRent, city, regionPlace, floor, room, description, ownerType, propertyCategory, mortgage, area, editing;
 
           if (scrapedItemsCount >= maxItemsPerWebsite) {
             return; // Stop further scraping for this website
@@ -380,7 +381,7 @@ const scrapeSite = async (req, res) => {
                   room = roomNumberElement.text().trim();
                 
                   const repairElement = $('.product-properties__i-name:contains("Təmir")').next('.product-properties__i-value');
-                  const repair = repairElement.text().trim();
+                  editing = repairElement.text().trim();
 
                   const propertyCategoryElement = $('.product-properties__i-name:contains("Kateqoriya")').next('.product-properties__i-value');
                   propertyCategory = propertyCategoryElement.text().trim();
@@ -433,7 +434,8 @@ const scrapeSite = async (req, res) => {
                       ownerType,
                       propertyCategory,
                       mortgage, 
-                      area
+                      area,
+                      editing
                     });
                   }
                   /* scrapedItemsCount++; // Increment the count of scraped items
@@ -503,9 +505,9 @@ const scrapeSite = async (req, res) => {
               city = locationParts.length > 1 ? locationParts[1].trim() : 'Not Found';
               regionPlace = locationParts.length > 0 ? locationParts[0].trim() : 'Not Found';
 
-               // Not available on Yeniemlak.az
+             /*   // Not available on Yeniemlak.az
               floor = 'Not Found'; // Not available on Yeniemlak.az
-              documents = 'Not Found'; // Not available on Yeniemlak.az
+              documents = 'Not Found'; // Not available on Yeniemlak.az */
 
               //////console.log(link, imageURL, price, sellingRent, city, regionPlace);
               scrapePromises.push(
@@ -526,7 +528,7 @@ const scrapeSite = async (req, res) => {
                       description = propertyDetailsElement.eq(0).text().trim();
                   
                       const checkElements = boxElement.find('.check');
-                      const renovated = checkElements.eq(0).text().trim();
+                      editing = checkElements.eq(0).text().trim();
                       const gas = checkElements.eq(1).text().trim();
                       const water = checkElements.eq(2).text().trim();
                       const electricity = checkElements.eq(3).text().trim();
@@ -574,7 +576,8 @@ const scrapeSite = async (req, res) => {
                           floor,
                           room,
                           source: website.source,
-                          description
+                          description, 
+                          editing
                         });
                       }
 

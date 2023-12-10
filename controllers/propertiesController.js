@@ -20,9 +20,9 @@ const getAllPropertiess = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: 'No propertiess found' });
       }
       console.log("Got properties")
-      const send = propertiess.filter(property=> property.propertiesData?.source==="Bina.az")
-      console.log("Filtered Properties")
-      res.json(send);
+      /* const send = propertiess.filter(property=> property.propertiesData?.source==="Bina.az")
+      console.log("Filtered Properties") */
+      res.json(propertiess);
     } catch (error) {
       return res.status(500).json({ message: 'Internal server error' });
     }
