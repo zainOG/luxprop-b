@@ -8,7 +8,7 @@ const sendEmail = require("../utils/email/sendEmail");
 // @access Private
 
 const getAllPropertiess = asyncHandler(async (req, res) => {
-    const limit = 40000; // Set the limit to 200 properties per request
+    const limit = 10000; // Set the limit to 200 properties per request
     const page = req.query.page || 1; // You can use query parameters to specify the page if needed
   
     const skip = (page - 1) * limit; // Calculate the number of documents to skip based on the page
