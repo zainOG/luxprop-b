@@ -6,27 +6,57 @@ const sendEmail = require("../utils/email/sendEmail");
 // @des GET ALL PROPERTIESS
 // @route GET /propertiess
 // @access Private
+const axios = require('axios');
 
 const getAllPropertiess = asyncHandler(async (req, res) => {
-    const limit = 15680; // Set the limit to 200 properties per request
-    const page = req.query.page || 1; // You can use query parameters to specify the page if needed
-  
-    const skip = (page - 1) * limit; // Calculate the number of documents to skip based on the page
-  
-    try {
-      const propertiess = await Properties.find().skip(skip).limit(limit).lean();
-    
-      if (!propertiess?.length) {
-        return res.status(400).json({ message: 'No propertiess found' });
-      }
-      console.log("Got properties")
-      /* const send = propertiess.filter(property=> property.propertiesData?.source==="Bina.az")
-      console.log("Filtered Properties") */
-      res.json(propertiess);
-    } catch (error) {
-      return res.status(500).json({ message: 'Internal server error' });
+  const limit = 5000;
+  const page = req.query.page || 1;
+
+  const skip = (page - 1) * limit;
+
+  try {
+    const properties = await Properties.find().skip(skip).limit(limit).lean();
+
+    if (!properties?.length) {
+      return res.status(400).json({ message: 'No properties found' });
     }
-  });
+
+    // Filter properties with valid imageURL
+   /*  const validProperties = await Promise.all(
+      properties.map(async (property) => {
+        if (property?.propertiesData?.imageURL) {
+          try {
+            const response = await axios.head(property.propertiesData.imageURL);
+            
+            if (response.status === 200) {
+              console.log("Image is valid.");
+              return property;
+            } else {
+              console.log("Image is not valid or cannot be loaded.");
+              return null;
+            }
+          } catch (error) {
+            console.error("Error checking image validity:", error.message);
+            return null;
+          }
+        }
+      })
+    ); */
+
+    /* const filteredProperties = validProperties.filter(Boolean); */
+
+    /* if (!filteredProperties?.length) {
+      return res.status(400).json({ message: 'No properties with valid images found' });
+    } */
+
+    console.log("Got properties:", " Sending: ", properties.length);
+    res.json(properties);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
   
 // @des CREATE NEW PROPERTIES
 // @route POST /propertiess
@@ -141,38 +171,41 @@ const updateProperties = asyncHandler(async (req, res) =>{
 // @access Private
 
 const deleteProperties = asyncHandler(async (req, res) =>{
-    const {_id, active}= req.body
-    if(!_id){
+    const {source}= req.body
+    if(!source){
         return res.status(400).json({message: 'ID Required'})
 
     }
-    console.log(_id, active)
-    /*const note= await Note.findOne({email}).lean().exec()
-
-    if(note){
-        return res.status(400).json({message: 'Properties has assigned tasks'})
-    }*/
-    const properties = await Properties.findById(_id).exec()
-
+    console.log(source)
+   
+    const properties = await Properties.find().lean()
     if(!properties){
         return res.status(400).json({message: 'Properties not found'})
 
     }
-    let result
-    if(!active&&active===undefined){
-        result = await properties.deleteOne()
-    }
-    if(active===true){
-        properties.active= false
-        result = await Properties.findByIdAndUpdate(properties._id, properties)
-    }
-    if(active===false){
-        properties.active= true
-        result = await Properties.findByIdAndUpdate(properties._id, properties)
-    }
-    console.log(result)
+    console.log("Total: ",properties.length)
+    const propertiesToDelete = properties.filter((property)=> {
+        if(!property.propertiesData){
+            if(property.propertiesData.source === source){
+                return property;
+            }
+        }
+    })
+    console.log("Deleting", propertiesToDelete.length)
 
-    const reply = `Email ${result.email} with ID ${result._id} deleted!`
+    
+    
+    if(!propertiesToDelete){
+        return res.status(400).json({message: 'No Properties to delete'})
+
+    }
+    
+    const propertyIdsToDelete = propertiesToDelete.map((property) => property._id);
+    
+    await Properties.deleteMany({ _id: { $in: propertyIdsToDelete } });
+   
+
+    const reply = `All deleted!`
 
     res.json(reply)
 })
