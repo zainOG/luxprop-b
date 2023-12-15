@@ -651,7 +651,7 @@ const scrapeSite = async (req, res) => {
               sellingRent = titleElement.text().split(' ')[0]; 
 
              
-              console.log('Selling or Renting:', sellingOrRent);
+              console.log('Selling or Renting:', sellingRent);
               
               console.log('Seller Name:', sellerName);
               console.log('Seller Type:', ownerType);
@@ -760,7 +760,7 @@ const scrapeSite = async (req, res) => {
             // Remove the content within parentheses
             const cleanedTitle = title.replace(/\([^)]*\)/g, '').trim();
             
-            // Extract sellingOrRent and PropertyCategory
+            // Extract and PropertyCategory
             [sellingRent, propertyCategory] = cleanedTitle.split(' ');
             documents = 'Visit the link for details'; // Not available on Arenda.az
             
