@@ -45,9 +45,9 @@ app.post('/api/v1/store', async (req, res) => {
         mode: 'payment',
         success_url: 'https://main.d2uw14r4mivh3i.amplifyapp.com/success',
         cancel_url: 'https://main.d2uw14r4mivh3i.amplifyapp.com/cancel',
-        customer_email: req.body.email
+        
       });
-      const createSession = await Session.create({sessionData:{id: session.id, customer_email: req.body.email}}) 
+      const createSession = await Session.create({sessionData:{id: session.id, }}) 
       if(createSession){
         console.log("Session Created")
       }

@@ -3,44 +3,55 @@ const userControllers = require('./userController')
 const bcrypt = require('bcrypt')
 const jwt = require ('jsonwebtoken')
 const asyncHandler = require('express-async-handler')
+const {sendSMS} = require('./sendSMS')
+function generateSixDigitOTP() {
+   
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    
+    return otp.toString(); 
+  }
 
 // @ route POST /auth
 // @ access public
 const login = asyncHandler( async(req, res) => {
-    const{ username, password, email } = req.body
+    const{ username, password, email, phone } = req.body
     console.log(req.body)
     const timestamp = Date.now()
-    if(!email||!password){
-        return res.status(400).json({ message: 'All fields are required'})
+    if(!phone){
+        return res.status(400).json({ message: 'Phone required'})
     }
     let foundUser
-    if (email && email.includes('@')) {
+    foundUser = await User.findOne({phone}).lean().exec()
+    /* if (email && email.includes('@')) {
         foundUser = await User.findOne({email}).lean().exec()
     } else {
        const username = email
         foundUser = await User.findOne({username}).lean().exec()
     }
    
-    
+    */
     if(!foundUser){
-        return res.status(401).json({ message: 'Not Registered!' })
+        return res.status(401).json({ message: 'Telefonunuz hələ qeydiyyata alınmadı!' })
 
-    }
+    } 
     
-    
+   
     if(foundUser){
         if(!foundUser.active)
             return res.status(401).json({ message: 'Unauthorized' })
 
-        const match = await bcrypt.compare(password, foundUser.password)
-
-        if(!match) 
-            return res.status(402).json({message: 'Incorrect Password'})
+        const otp = generateSixDigitOTP()
+        const message = "Hello there from Emlakci.az, here's your OTP "+otp;
+        const destination = phone;
+        const response = await sendSMS(destination, message);
+        console.log("response", response)
+        
+        
         
         const accessToken = jwt.sign(
             {
                 "UserInfo":{
-                    "email": foundUser.email,
+                    "phone": foundUser.phone,
                     "fullName": foundUser.fullName,
                     "role": foundUser.role,
                     
@@ -54,8 +65,8 @@ const login = asyncHandler( async(req, res) => {
         )
     
         const refershToken = jwt.sign(
-            {"email": foundUser.email,
-            "tasks": foundUser.tasks, 
+            {"phone": foundUser.phone,
+           
         },
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: '2hr'}
@@ -68,21 +79,29 @@ const login = asyncHandler( async(req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 //cookie expiry: set to match rT
         })
         
-        res.json({ accessToken, Name: foundUser.fullName, Role: foundUser.role, lastLogin: foundUser.lastLogin })
+        res.json({ accessToken, Name: foundUser.fullName, Role: foundUser.role, lastLogin: foundUser.lastLogin, otp, response, message})
     }
     if(foundUser){
         foundUser.lastLogin= timestamp
         const updatedUser= await User.findByIdAndUpdate(foundUser._id, foundUser)
         console.log("time updated!")
 
-    }
+    } 
 
 })
 
 // @ route POST /auth/sigup
 // @ access public
 const signup =(req, res) =>{
-   userControllers.createNewUser(req, res)
+   const {verify} = req.body
+   console.log(req.body)
+   if(verify){
+        console.log("STEP 01: VERIFY USER")
+        userControllers.verifyUser(req, res)
+   }else{
+        console.log("STEP 02: CREATE USER")
+        userControllers.createNewUser(req, res)
+   }
 }
 
 

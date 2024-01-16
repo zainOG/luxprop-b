@@ -2,6 +2,13 @@ const User= require('../models/User')
 const asyncHandler= require('express-async-handler')
 const bcrypt = require('bcrypt')
 const sendEmail = require("../utils/email/sendEmail");
+const {sendSMS} = require('./sendSMS')
+function generateSixDigitOTP() {
+   
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    
+    return otp.toString(); 
+  }
 // @des GET ALL USERS
 // @route GET /users
 // @access Private
@@ -18,34 +25,35 @@ const getAllUsers = asyncHandler(async (req, res) =>{
 // @access Private
 
 const createNewUser = asyncHandler(async (req, res) =>{
-        const{email, fullName, password, paymentStatus}= req.body
+        const{email, fullName, password, paymentStatus, phone}= req.body
 
         //Confirm data 
-        if (!email|| !password ){
+        if (!phone ){
                 return res.status(400).json({message: 'All fields are required!'})
 
         }
 
         //Check for duplicates
 
-        const duplicates = await User.findOne({email}).lean().exec()
+        const duplicates = await User.findOne({phone}).lean().exec()
 
         if(duplicates){
-            return res.status(409).json({message: 'Email already exists! '})
+            return res.status(409).json({message: 'Phone already exists! '})
         }
 
         // Hash password 
 
-        const hashedPwd = await bcrypt.hash(password, 10)
+        //const hashedPwd = await bcrypt.hash(password, 10)
 
-        const userObject ={ email, fullName, "password": hashedPwd, active: paymentStatus}
+        const userObject ={ phone, fullName, active: paymentStatus}
 
         // Create a store new user
 
         const user= await User.create(userObject)
         if(user){
-            res.status(201).json({message: `New user ${email} created!`})
-            sendEmail(
+            console.log("USER CREATED")
+            res.status(201).json({message: `New user ${phone} ${fullName} created!`})
+            /* sendEmail(
                 user.email,
                 "Account Successfully Created",
                 {
@@ -53,7 +61,47 @@ const createNewUser = asyncHandler(async (req, res) =>{
                   
                 },
                 "./template/welcome.handlebars"
-              );
+              ); */
+        } else{
+            res.status(400).json({message: 'Invaild Data used'})
+        }
+        
+})
+
+const verifyUser = asyncHandler(async (req, res) =>{
+        const{phone}= req.body
+
+        //Confirm data 
+        if (!phone ){
+                return res.status(400).json({message: 'All fields are required!'})
+
+        }
+
+        //Check for duplicates
+        
+
+        const duplicates = await User.findOne({phone}).lean().exec()
+
+        if(duplicates){
+            return res.status(409).json({message: 'Phone already exists! '})
+        }
+        const otp = generateSixDigitOTP()
+        const message = "Hello there from Emlakci.az, here's your OTP "+otp;
+        const destination = phone;
+        const response = await sendSMS(destination, message);
+        console.log("response", response)
+        
+        if(destination){
+            res.status(200).json({message: `Successfully Sent Verification!`, otp, response, message})
+            /* sendEmail(
+                user.email,
+                "Account Successfully Created",
+                {
+                  name: user.fullName,
+                  
+                },
+                "./template/welcome.handlebars"
+              ); */
         } else{
             res.status(400).json({message: 'Invaild Data used'})
         }
@@ -167,5 +215,6 @@ module.exports={
     getAllUsers,
     createNewUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    verifyUser
 }
