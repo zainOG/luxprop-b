@@ -974,7 +974,12 @@ const scrapeFurther = async(headers, link) =>{
 
 }
 
-
+cron.schedule('*/4 * * * *',   () => {
+  ////console.log('Running scraper...');
+  scrapeSite().catch(error => {
+    ////console.log(`An error occurred in the scheduled task: ${error}`);
+  });
+});
 
 
 
