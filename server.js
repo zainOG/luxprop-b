@@ -34,11 +34,11 @@ app.post('/api/v1/store', async (req, res) => {
         payment_method_types: ['card'],
         line_items: [{
           price_data: {
-            currency: 'usd',
+            currency: 'azn',
             product_data: {
-              name: 'One-Time Lux Properties Subscription',
+              name: 'VIP PAKET',
             },
-            unit_amount: 120000, // 120, 000 cents = $1200.00
+            unit_amount: 100, // 120, 000 cents = $1200.00
           },
           quantity: 1,
         }],
