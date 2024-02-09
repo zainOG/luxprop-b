@@ -9,7 +9,7 @@ const sendEmail = require("../utils/email/sendEmail");
 const axios = require('axios');
 
 const getAllPropertiess = asyncHandler(async (req, res) => {
-  const limit = 5000;
+  const limit = 15000;
   const page = req.query.page || 1;
 
   const skip = (page - 1) * limit;
