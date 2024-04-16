@@ -113,7 +113,7 @@ const verifyUser = asyncHandler(async (req, res) =>{
 // @access Private
 
 const updateUser = asyncHandler(async (req, res) =>{
-    const {email, phone, role, password, active, permissions, username, notes}= req.body
+    const {email, phone, role, password, active, permissions, username, notes, userData}= req.body
 
     //Confirm Data
     if(!email){
@@ -160,6 +160,9 @@ const updateUser = asyncHandler(async (req, res) =>{
     }
     if(notes){
         user.notes= notes
+    }
+    if(userData){
+        user.userData = userData
     }
     const updatedUser= await user.save()
     
