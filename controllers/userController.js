@@ -28,7 +28,7 @@ const createNewUser = asyncHandler(async (req, res) =>{
         const{email, fullName, password, paymentStatus, phone}= req.body
 
         //Confirm data 
-        if (!phone ){
+        if (!phone && !email){
                 return res.status(400).json({message: 'All fields are required!'})
 
         }
