@@ -35,17 +35,19 @@ const createNewUser = asyncHandler(async (req, res) =>{
 
         //Check for duplicates
 
-        const duplicates = await User.findOne({phone}).lean().exec()
+        let duplicates = await User.findOne({phone}).lean().exec()
+        if(email)
+            duplicates = await User.findOne({email}).lean().exec()
 
         if(duplicates){
-            return res.status(409).json({message: 'Phone already exists! '})
+            return res.status(409).json({message: 'Email or phone already exists! '})
         }
 
         // Hash password 
 
-        //const hashedPwd = await bcrypt.hash(password, 10)
+        const hashedPwd = await bcrypt.hash(password, 10)
 
-        const userObject ={ phone, email, password, fullName, active: paymentStatus}
+        const userObject ={ phone, email, password: hashedPwd, fullName, active: paymentStatus}
 
         // Create a store new user
 

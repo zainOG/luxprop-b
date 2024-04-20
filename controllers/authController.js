@@ -31,6 +31,7 @@ const login = asyncHandler( async(req, res) => {
         foundUser = await User.findOne({username}).lean().exec()
     }
    
+    console.log("EMAIL")
    
     if(!foundUser){
         return res.status(401).json({ message: 'Telefonunuz hələ qeydiyyata alınmadı!' })
@@ -39,8 +40,8 @@ const login = asyncHandler( async(req, res) => {
     
    
     if(foundUser){
-        if(!foundUser.active)
-            return res.status(401).json({ message: 'Unauthorized' })
+        //if(!foundUser.active)
+            //return res.status(401).json({ message: 'Unauthorized' })
 
         const otp = generateSixDigitOTP()
         const message = "Hello there from Emlakci.az, here's your OTP "+otp;
@@ -93,7 +94,7 @@ const login = asyncHandler( async(req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 //cookie expiry: set to match rT
         })
         
-        res.json({ accessToken, Name: foundUser.fullName, Role: foundUser.role, lastLogin: foundUser.lastLogin, otp, response, message})
+        res.json({ accessToken, Name: foundUser.fullName, Role: foundUser.role, lastLogin: foundUser.lastLogin, otp, message})
     }
     if(foundUser){
         foundUser.lastLogin= timestamp
