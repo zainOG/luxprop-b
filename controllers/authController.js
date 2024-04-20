@@ -17,19 +17,21 @@ const login = asyncHandler( async(req, res) => {
     const{ username, password, email, phone } = req.body
     console.log(req.body)
     const timestamp = Date.now()
-    if(!phone){
-        return res.status(400).json({ message: 'Phone required'})
+    if(!phone&&!email){
+        return res.status(400).json({ message: 'Email or phone required required'})
     }
     let foundUser
+    
     foundUser = await User.findOne({phone}).lean().exec()
-    /* if (email && email.includes('@')) {
+
+    if (email && email.includes('@')) {
         foundUser = await User.findOne({email}).lean().exec()
-    } else {
+    } else if(email) {
        const username = email
         foundUser = await User.findOne({username}).lean().exec()
     }
    
-    */
+   
     if(!foundUser){
         return res.status(401).json({ message: 'Telefonunuz hələ qeydiyyata alınmadı!' })
 
@@ -42,9 +44,19 @@ const login = asyncHandler( async(req, res) => {
 
         const otp = generateSixDigitOTP()
         const message = "Hello there from Emlakci.az, here's your OTP "+otp;
-        const destination = phone;
-        const response = await sendSMS(destination, message);
-        console.log("response", response)
+       
+        if(phone){
+            const destination = phone;
+            const response = await sendSMS(destination, message);
+            console.log("response", response)
+        } 
+        if(email){
+            const match = await bcrypt.compare(password, foundUser.password)
+
+            if(!match) 
+                return res.status(402).json({message: 'Incorrect Password'})
+        }
+        
         
         
         
@@ -52,9 +64,10 @@ const login = asyncHandler( async(req, res) => {
             {
                 "UserInfo":{
                     "phone": foundUser.phone,
+                    "email": foundUser.email,
                     "fullName": foundUser.fullName,
                     "role": foundUser.role,
-                    
+                    "userData": foundUser.userData,
                     "active": foundUser.active,
                     
                 }
@@ -65,7 +78,8 @@ const login = asyncHandler( async(req, res) => {
         )
     
         const refershToken = jwt.sign(
-            {"phone": foundUser.phone,
+            {   "phone": foundUser.phone,
+                "email": foundUser.email,
            
         },
             process.env.REFRESH_TOKEN_SECRET,

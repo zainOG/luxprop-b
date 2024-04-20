@@ -45,7 +45,7 @@ const createNewUser = asyncHandler(async (req, res) =>{
 
         //const hashedPwd = await bcrypt.hash(password, 10)
 
-        const userObject ={ phone, fullName, active: paymentStatus}
+        const userObject ={ phone, email, password, fullName, active: paymentStatus}
 
         // Create a store new user
 
