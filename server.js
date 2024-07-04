@@ -25,6 +25,7 @@ app.use(logger)
 
 app.use(cors(corsOptions))
 
+
 app.use(express.json())
 
 app.post('/api/v1/store', async (req, res) => {
